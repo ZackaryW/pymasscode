@@ -1,0 +1,2 @@
+[tool.ruff.extend_per_file_ignore]
+"__init__.py" = ["F401"]
