@@ -2,11 +2,14 @@
 Middleware for interacting with MassCode database
 
 ## Installation
-You must have masscode installed in order for it to work properly, to install masscode, either use `scoop install masscode` or `choco install masscode` 
-if you have scoop/choco
+You must have masscode installed in order for it to work properly
+
+### Windows Machine
+to install masscode, either use `scoop install masscode` or `choco install masscode` if you have scoop/choco
 
 OR see https://masscode.io/
 
+### Package
 ```bash
 pip install masscode-driver
 ```

@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="masscode-driver",
-    version="1.0.1",
+    version="1.0.2",
     description="Driver for MassCode",
     author="ZackaryW",
     url="https://github.com/ZackaryW/masscode-driver",

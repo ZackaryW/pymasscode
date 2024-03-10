@@ -1,7 +1,7 @@
 import os
 import shutil
 from masscodeDriver.model import StorageData
-
+import platform
 from masscodeDriver.utils import FileProperty, SingletonMeta
 
 class AppLoader(metaclass=SingletonMeta):
@@ -9,7 +9,11 @@ class AppLoader(metaclass=SingletonMeta):
 
     def __init__(self, expectAppdataPath : str = None) -> None:
         if expectAppdataPath is None:
-            expectAppdataPath = os.path.join(os.getenv("APPDATA"), "massCode")
+            if platform.system() == "Windows":
+                expectAppdataPath = os.path.join(os.getenv("APPDATA"), "massCode")
+            else:
+                expectAppdataPath = os.path.join(os.getenv("HOME"), ".massCode")
+                # ? is it the correct path? need a pull request
 
         if not os.path.exists(expectAppdataPath):
             raise Exception("MassCode is not installed or initialized correctly.")
