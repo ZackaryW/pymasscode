@@ -1,9 +1,8 @@
-
 from setuptools import setup
 
 setup(
     name="masscode-driver",
-    version="0.9.0",
+    version="1.0.1",
     description="Driver for MassCode",
     author="ZackaryW",
     url="https://github.com/ZackaryW/masscode-driver",
@@ -11,7 +10,7 @@ setup(
         "masscodeDriver",
     ],
     install_requires=[
-        "sioDict",
+        "thefuzz",
     ],
     python_requires=">=3.8",
     license="MIT",

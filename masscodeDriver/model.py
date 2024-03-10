@@ -1,6 +1,6 @@
 from typing import List, Optional, TypedDict
 
-class Folder(TypedDict):
+class FolderModel(TypedDict):
     name: str
     index: int
     parentId: Optional[str]
@@ -16,7 +16,7 @@ class Content(TypedDict):
     language: str
     value: str
 
-class Snippet(TypedDict):
+class SnippetModel(TypedDict):
     name: str
     description: Optional[str]
     isDeleted: bool
@@ -28,13 +28,13 @@ class Snippet(TypedDict):
     content: List[Content]
     id: str
 
-class Tag(TypedDict):
+class TagModel(TypedDict):
     name: str
     createdAt: int
     updatedAt: int
     id: str
 
 class StorageData(TypedDict):
-    folders: List[Folder]
-    tags: List[Tag]
-    snippets: List[Snippet]
+    folders: List[FolderModel]
+    tags: List[TagModel]
+    snippets: List[SnippetModel]
