@@ -8,7 +8,7 @@ from masscodeDriver.utils import RETURN_FIRST
 AppLoader(os.environ["DB"])
 
 snippetfrag =RETURN_FIRST(
-    Snippet.fragmentQuery(folder="python",name="pypi upload",language="python"))
+    Snippet.fragmentQuery(name="pypi upload",language="python"))
 
 exec(snippetfrag["value"])
 

@@ -429,7 +429,7 @@ class Snippet(Interface):
 
         if tag is not None:
             if isinstance(tag, typing.Generator):
-                matched_tags = iter(folder)
+                matched_tags = iter(tag)
             elif isinstance(tag, dict):
                 matched_tags = Tag.query(**tag)
             elif isinstance(tag, Tag):
