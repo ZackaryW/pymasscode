@@ -1,3 +1,10 @@
 # pymasscode
+a re-designed masscode driver for python
 
-Describe your project here.
+## install
+```bash
+pip install pymasscode
+```
+
+## Status
+under development
