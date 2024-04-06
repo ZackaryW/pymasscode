@@ -1,13 +1,14 @@
 from setuptools import setup
 
 setup(
-    name="masscode-driver",
-    version="1.0.3",
-    description="Driver for MassCode",
+    name="pymasscode",
+    version="1.0.0b1",
+    description="Masscode query and api wrapper",
     author="ZackaryW",
     url="https://github.com/ZackaryW/masscode-driver",
     packages=[
-        "masscodeDriver",
+        "pymasscode",
+        "pymasscode.etc",
     ],
     install_requires=[
         "thefuzz",
