@@ -1,6 +1,6 @@
 [project]
 name = "pymasscode"
-version = "1.0.0b2"
+version = "1.0.0b3"
 description = "Masscode query and api wrapper"
 authors = [
     { name = "ZackaryW", email = "36378555+ZackaryW@users.noreply.github.com" }
