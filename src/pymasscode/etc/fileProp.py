@@ -1,112 +1,81 @@
+
+import io
 import os
+import typing
+import hashlib
 
-from pymasscode.etc.utils import load_json
+class FileCtx(typing.TypedDict):
+    sha256 : str
+    size : int
+    mdate : int
+    adate : int
 
+    content : typing.Any
 
 class FileProperty:
-    def __init__(self, path, watching=["mdate", "size"], passOverIoOnly: bool = False):
-        self.path: str = path
+    _properties : typing.Dict[str, FileCtx] = {}
 
-        self.watching = {k: None for k in watching}
-        self.content = None
-        self.checked = False
+    @staticmethod
+    def returnIOWrapper(path : str):
+        return open(path, 'r+')
 
-        self.callback = None
-        self.overloadOpen = None
+    @staticmethod
+    def __defaultLoadMethod(path :str):
+        with open(path, 'r') as f:
+            if path.endswith('.json'):
+                import json
+                return json.load(f)
+            else:
+                return f.read()
 
-        #
-        self.passOverIoOnly = passOverIoOnly
+    @staticmethod
+    def __directRead(path : str):
+        with open(path, 'rb') as f:
+            return f.read()
 
-    def prep(self):
-        if "size" in self.watching:
-            self.watching["size"] = os.path.getsize(self.path)
-
-        if "mdate" in self.watching:
-            self.watching["mdate"] = os.path.getmtime(self.path)
-
-    def __check_path__(self, instance, owner):
-        if self.checked:
-            return
-
-        if callable(self.path):
-            self.path = self.path()
-
-        has_self = "{self." in self.path
-        has_cls = "{cls." in self.path
-
-        if has_self or has_cls:
-            header = self.path.index("{self.")
-            footer = self.path.index("}")
-            dynpart = self.path[header : footer + 1]
-
-            # convert self.{} into a instance var
-            target = (
-                self.path[header + 6 : footer]
-                if has_self
-                else self.path[header + 5 : footer]
-            )
-            output = {"output": instance if has_self else owner}
-            exec(f"output = output.{target}\n", output)
-
-            # replace self.{} with var
-            self.path = self.path.replace(dynpart, str(output["output"]))
-
-        self.prep()
-
-        self.checked = True
-
-    def watch(self, instance, owner):
-        ctx = {}
-        if "mdate" in self.watching:
-            nmdate = os.path.getmtime(self.path)
-            ctx["mdate"] = nmdate
-            if ctx["mdate"] != self.watching["mdate"]:
-                return True, ctx
-
-        if "size" in self.watching:
-            csize = os.path.getsize(self.path)
-            ctx["size"] = csize
-            if ctx["size"] != self.watching["size"]:
-                return True, ctx
-
-        return False, ctx
+    def __init__(
+        self, 
+        path : property, 
+        watching : typing.List[typing.Literal["mdate", "adate", "sha256", "size"]] = ["mdate","size", ],
+        callback : typing.Callable = None,
+        loadmethod : typing.Callable = None
+    ):
+        self.path = path
+        self.watching = watching
+        self.callback = callback
+        self.loadmethod = loadmethod or FileProperty.__defaultLoadMethod
 
     def __get__(self, instance, owner):
-        self.__check_path__(instance, owner)
+        if isinstance(self.path, property):
+            self.path = self.path.fget(instance)
+        
+        if not os.path.exists(self.path):
+            return None
+        
+        recordedCtx =self._properties.get(self.path, {})
+        
+        prepNewCtx = {}
 
-        if self.passOverIoOnly:
-            self.passOverIoOnly = open(self.path, "r+")
-            return self.passOverIoOnly
+        for item in self.watching:
+            if item == "sha256":
+                prepNewCtx["sha256"] = hashlib.sha256(self.__directRead(self.path)).hexdigest()
+            elif item == "size":
+                prepNewCtx["size"] = os.path.getsize(self.path)
+            elif item == "mdate":
+                prepNewCtx["mdate"] = os.path.getmtime(self.path)
+            elif item == "adate":
+                prepNewCtx["adate"] = os.path.getatime(self.path)
 
-        if self.content is None or (restuple := self.watch(instance, owner))[0]:
-            self.reload_file()
-            if self.callback:
-                self.callback(instance, owner)
 
-        if "restuple" in locals():
-            self.watching.update(restuple[1])
-        return self.content
+        if recordedCtx and all(prepNewCtx[x] == recordedCtx[x] for x in self.watching):
+            return recordedCtx["content"]
+        else:
+            recordedContent = recordedCtx.get("content", None)
+            if isinstance(recordedContent, io.TextIOWrapper):
+                recordedContent.close()
 
-    def reload_file(self):
-        with open(self.path, "r") as file:
-            if self.path.endswith(".json"):
-                self.content = load_json(self.path)
-            else:
-                self.content = file.read()
-
-    def __call__(self, **kwargs):
-        updateMetaNoReload = kwargs.pop("updateMetaNoReload", False)
-        if updateMetaNoReload:
-            self.prep()
-
-        swapPrepMethod = kwargs.pop("swapPrepMethod", False)
-        if swapPrepMethod:
-            self.prep = kwargs.pop("prepMethod")
-
-        swapCallback = kwargs.pop("swapCallback", False)
-        if swapCallback:
-            self.callback = kwargs.pop("callback")
-
-    def __del__(self):
-        if self.passOverIoOnly:
-            self.passOverIoOnly.close()
+            content = self.loadmethod(self.path)
+            prepNewCtx["content"] = content
+            self._properties[self.path] = prepNewCtx
+            return content
+            

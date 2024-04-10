@@ -54,47 +54,53 @@ class Loader:
         else:
             self.config = LoaderConfig.defaultConfig()
 
-        self.dbPath = dbPath
-        self.appdataPath = appdataPath
+        self.__dbPath = dbPath
+        self.__appdataPath = appdataPath
 
-        if self.dbPath and os.path.join(self.dbPath):
-            self.dbPath = os.path.abspath(self.dbPath)
-            assert os.path.exists(self.dbPath)
-            assert self.dbPath.endswith("db.json")
+        if self.__dbPath and os.path.join(self.__dbPath):
+            self.__dbPath = os.path.abspath(self.__dbPath)
+            assert os.path.exists(self.__dbPath)
+            assert self.__dbPath.endswith("db.json")
         else:
-            if not self.appdataPath:
-                self.appdataPath = Loader.getPossiblePathByPlatform()
+            if not self.__appdataPath:
+                self.__appdataPath = Loader.getPossiblePathByPlatform()
 
-            if not os.path.exists(self.appdataPath):
+            if not os.path.exists(self.__appdataPath):
                 raise RuntimeError(
                     "MassCode is not installed or initialized correctly."
                 )
 
-            self.dbPath = os.path.join(self.preferences["storagePath"], "db.json")
+            self.__dbPath = os.path.join(self.preferences["storagePath"], "db.json")
 
         # check if db path is empty (0kb), if yes, assume an error occured and restore bkup file if it exists
-        if not os.path.exists(self.dbPath) or os.path.getsize(self.dbPath) == 0:
-            if os.path.exists(os.path.dirname(self.dbPath) + "/db.bkup.json"):
-                shutil.copy(os.path.dirname(self.dbPath) + "/db.bkup.json", self.dbPath)
+        if not os.path.exists(self.__dbPath) or os.path.getsize(self.__dbPath) == 0:
+            if os.path.exists(os.path.dirname(self.__dbPath) + "/db.bkup.json"):
+                shutil.copy(os.path.dirname(self.__dbPath) + "/db.bkup.json", self.__dbPath)
 
         if self.config["create_bkup"]:
-            shutil.copy(self.dbPath, os.path.dirname(self.dbPath) + "/db.bkup.json")
+            shutil.copy(self.__dbPath, os.path.dirname(self.__dbPath) + "/db.bkup.json")
+
+    @property
+    def dbPath(self):
+        return self.__dbPath
+    
+    @property
+    def appdataPath(self):
+        return self.__appdataPath
 
     @property
     def preferencePath(self):
-        return os.path.join(self.appdataPath, "v2", "preferences.json")
+        return os.path.join(self.__appdataPath, "v2", "preferences.json")
 
-    preferences: dict = FileProperty(
-        os.path.join("{self.appdataPath}", "v2", "preferences.json")
-    )
+    preferences: dict = FileProperty(preferencePath)
 
     @property
     def appconfigPath(self):
-        return os.path.join(self.appdataPath, "v2", "app.json")
+        return os.path.join(self.__appdataPath, "v2", "app.json")
 
-    appconfig: dict = FileProperty(os.path.join("{self.appdataPath}", "v2", "app.json"))
+    appconfig: dict = FileProperty(appconfigPath)
 
-    dbIo: io.TextIOWrapper = FileProperty("{self.dbPath}", passOverIoOnly=True)
+    dbIo: io.TextIOWrapper = FileProperty(dbPath, loadmethod=FileProperty.returnIOWrapper)
 
     def dbFolders(self):
         for folder in self.dbContent["folders"]:
@@ -116,13 +122,13 @@ class Loader:
     @property
     def dbContent(self) -> StorageData:
         if not hasattr(self, "__dbContentLastModified"):
-            self.__dbContentLastModified = os.path.getmtime(self.dbPath)
+            self.__dbContentLastModified = os.path.getmtime(self.__dbPath)
 
-        if self.__dbContentLastModified == os.path.getmtime(self.dbPath):
+        if self.__dbContentLastModified == os.path.getmtime(self.__dbPath):
             return self.__dbContent
 
         self.__dict__.pop("__dbContent", None)
-        self.__dbContentLastModified = os.path.getmtime(self.dbPath)
+        self.__dbContentLastModified = os.path.getmtime(self.__dbPath)
 
         return self.__dbContent
 

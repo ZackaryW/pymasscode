@@ -562,7 +562,7 @@ def where(key: str) -> Query:
 
 
 # ANCHOR modifications
-from thefuzz import fuzz  # noqa
+from thefuzz import fuzz  # type: ignore # noqa
 
 
 class MQuery(Query):
