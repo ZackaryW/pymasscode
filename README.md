@@ -1,10 +1,7 @@
+> ### Archive Notice
+> This project is deprecated in favor of using native resolve methods
+> for advanced implementations, see [repo](https://github.com/ZackaryW/masscode-utils)
+
 # pymasscode
-a re-designed masscode driver for python
+masscode middleware
 
-## install
-```bash
-pip install pymasscode
-```
-
-## Status
-under development
